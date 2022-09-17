@@ -1,3 +1,6 @@
 
 .DS_Store
 .idea
+source/dist
+source/build
+app/*.app
