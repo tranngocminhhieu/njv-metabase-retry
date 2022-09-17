@@ -1,2 +1,5 @@
-# njv-metabase-retry
-An application help Ninjas retry run Metabase query and download Excel
+## How to convert py to app
+```
+pip install pyinstaller
+pyinstaller --onefile -w gui.py
+```
