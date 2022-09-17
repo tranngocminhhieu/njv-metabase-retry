@@ -1,4 +1,5 @@
 ## How to convert py to app
+To convert a Python script to a macOS application, run this shell on a macOS device. And vice versa, to convert Python script to a Windows application, run this shell on a Windows device.
 ```
 pip install pyinstaller
 
@@ -31,6 +32,7 @@ We can change the version in https://pastebin.com/raw/0uJU5URe, the application 
 
 4. Saving file.
 - The app can save the query result to Excel and CSV with directory of user.
+- Downloads is default directory if user input does not contain any directory.
 
 5. Interacting with user.
 - The app will print error, process to the Text box. Random emoji will be included for some case.
