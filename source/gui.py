@@ -1,4 +1,5 @@
 # For building GUI
+import tkinter.messagebox
 from tkinter import *
 from tkinter import ttk
 import threading
@@ -369,3 +370,9 @@ root = Tk()
 root.eval('tk::PlaceWindow . center') # Center screen
 Metabase_Retry(root)
 root.mainloop()
+
+# Stop process after closing window
+def destroyer():
+    root.quit()
+    root.destroy()
+root.protocol("WM_DELETE_WINDOW", destroyer)
