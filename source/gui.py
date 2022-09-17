@@ -1,4 +1,5 @@
 # For building GUI
+import sys
 import tkinter.messagebox
 from tkinter import *
 from tkinter import ttk
@@ -153,7 +154,7 @@ class Metabase_Retry:
         input_retry_times.grid(column=2, row=4, sticky=(W))
 
         # Area 1: Button to run
-        ttk.Button(mainframe, text="Run & Download", command=lambda : threading.Thread(target=self.handle_app).start(), default="active").grid(column=2, row=4, sticky=E)
+        ttk.Button(mainframe, text="Run & Download", command=lambda : threading.Thread(target=self.handle_app, daemon=True).start(), default="active").grid(column=2, row=4, sticky=E)
 
         # Area 1: Auto save_as and fill user input.
         # Auto fill Question URL
@@ -210,7 +211,7 @@ class Metabase_Retry:
         input_question_url.focus()
 
         # Blind Enter button to do run
-        root.bind("<Return>", lambda zzz : threading.Thread(target=self.handle_app).start())
+        root.bind("<Return>", lambda zzz : threading.Thread(target=self.handle_app, daemon=True).start()) # threading help avoid freezing app daemon=True help stop process after closing window
 
         # Notifying user to update app
         if self.check_version == False:
@@ -364,15 +365,17 @@ class Metabase_Retry:
                 self.output.insert(END, f'\nIt took {took_time//60} minutes {took_time%60} seconds')
             self.output.see(END)
 
-
+# def destroyer():
+#     root.quit()
+#     root.destroy()
+#     sys.exit()
 
 root = Tk()
+
 root.eval('tk::PlaceWindow . center') # Center screen
 Metabase_Retry(root)
-root.mainloop()
 
 # Stop process after closing window
-def destroyer():
-    root.quit()
-    root.destroy()
-root.protocol("WM_DELETE_WINDOW", destroyer)
+# root.protocol("WM_DELETE_WINDOW", destroyer)
+
+root.mainloop()
