@@ -248,7 +248,7 @@ class Metabase_Retry:
         if self.question_url.get() == '':
             self.output.insert(END, f'\nPlease fill in the Question URL', 'red')
         elif not 'https://metabase.ninjavan.co/question/' in self.question_url.get():
-            self.output.insert(END, '\nThe question URL is invalid. Please paste the URL copied from your browser.', 'red')
+            self.output.insert(END, '\nThis question URL is invalid. Please paste the URL copied from your browser.', 'red')
         else:
             check_question_url = True
             with open(f'{self.metabase_retry_path}/question_url.txt', 'w') as f:
@@ -258,7 +258,7 @@ class Metabase_Retry:
         if self.cookie.get() == '':
             self.output.insert(END, '\nPlease fill in the Cookie', 'red')
         elif len(self.cookie.get().split('-')) != 5:
-            self.output.insert(END, '\nCookie is invalid. Please fill the metabase.SESSION cookie.\nAdd this extension to Chrome > Go to Metabase > Click the extension > Copy metabase.SESSION.\nhttps://chrome.google.com/webstore/detail/cookie-tab-viewer/fdlghnedhhdgjjfgdpgpaaiddipafhgk', 'red')
+            self.output.insert(END, '\nThis cookie is invalid. Please fill the metabase.SESSION cookie.\nAdd this extension to Chrome > Go to Metabase > Click the extension > Copy metabase.SESSION.\nhttps://chrome.google.com/webstore/detail/cookie-tab-viewer/fdlghnedhhdgjjfgdpgpaaiddipafhgk', 'red')
         else:
             check_cookie = True
             with open(f'{self.metabase_retry_path}/cookie.txt', 'w') as f:
@@ -266,9 +266,11 @@ class Metabase_Retry:
 
         question = get_question(self.question_url.get())
         cookie = self.cookie.get()
-        check_status = check_valid_cookie_url(cookie, question)
-        if check_status != True:
-            self.output.insert(END, f'\n{check_status}', 'red')
+        check_status = False
+        if check_question_url and check_cookie:
+            check_status = check_valid_cookie_url(cookie, question)
+            if check_status != True:
+                self.output.insert(END, f'\n{check_status}', 'red')
 
         check_save_as = False
         if self.save_as.get() == '':
@@ -281,7 +283,7 @@ class Metabase_Retry:
                 with open(f'{self.metabase_retry_path}/save_as.txt', 'w') as f:
                     f.write(self.save_as.get())
             else:
-                self.output.insert(END, '\nDirectory does not exist.', 'red')
+                self.output.insert(END, '\nThis directory does not exist.', 'red')
 
         check_retry_times = False
         if self.retry_times.get() == '':
