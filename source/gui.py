@@ -52,7 +52,7 @@ def get_params(cookie, question_url):
 def check_valid_cookie_url(cookie, question):
     try:
         res = requests.post(f'https://metabase.ninjavan.co/api/card/{question}/query/json',
-                            headers={'Content-Type': 'application/json', 'X-Metabase-Session': cookie}, timeout=2)
+                            headers={'Content-Type': 'application/json', 'X-Metabase-Session': cookie}, timeout=3)
         if res.status_code == 404:
             return 'This question does not exist.'
         elif res.status_code == 401:
@@ -104,16 +104,19 @@ class Metabase_Retry:
     def __init__(self, root):
         # The version help force user update app
         self.current_version = '1.0'
-        self.latest_version = requests.get('https://pastebin.com/raw/0uJU5URe').text
+        try:
+            self.latest_version = requests.get('https://pastebin.com/raw/0uJU5URe').text
+        except:
+            self.latest_version = self.current_version
         self.check_version = self.current_version == self.latest_version
 
         # Creating app data folder
-        self.metabase_retry_path = str(Path.home() / 'Documents/metabase_retry')
+        self.metabase_retry_path = str(Path.home() / 'Documents' / 'metabase_retry')
         if not os.path.exists(self.metabase_retry_path):
             os.makedirs(self.metabase_retry_path)
 
         # App name
-        root.title("🥷🏻 NinjaVan Metabase Retry")
+        root.title("NinjaVan Metabase Retry")
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
 
@@ -264,20 +267,21 @@ class Metabase_Retry:
             with open(f'{self.metabase_retry_path}/cookie.txt', 'w') as f:
                 f.write(self.cookie.get())
 
-        question = get_question(self.question_url.get())
-        cookie = self.cookie.get()
-        check_status = False
-        if check_question_url and check_cookie:
-            check_status = check_valid_cookie_url(cookie, question)
-            if check_status != True:
-                self.output.insert(END, f'\n{check_status}', 'red')
-
         check_save_as = False
         if self.save_as.get() == '':
-            self.output.insert(END, '\nPlease fill in the Save as', 'red')
+            self.output.insert(END, '\nPlease fill in the Save as. Example Downloads/query.xlsx', 'red')
+        elif not 'csv' in self.save_as.get() and not 'xlsx' in self.save_as.get():
+            self.output.insert(END, '\nPlease include .xlsx or .csv for file name.', 'red')
         else:
-            file_path = str(Path.home() / self.save_as.get())
-            folder_path = '/'.join(file_path.split('/')[:-1])
+            path_split = self.save_as.get().split('/')
+            if '/' in self.save_as.get():
+                folder_path = str(Path.home())
+                for i in path_split[:-1]:
+                    folder_path = str(os.path.join(folder_path, i))
+            else:
+                folder_path = str(os.path.join(Path.home(), 'Downloads'))
+            file_path = str(os.path.join(folder_path, path_split[-1]))
+
             if os.path.isdir(folder_path):
                 check_save_as = True
                 with open(f'{self.metabase_retry_path}/save_as.txt', 'w') as f:
@@ -299,6 +303,14 @@ class Metabase_Retry:
             except:
                 self.output.insert(END, '\nPlease enter a positive number.', 'red')
 
+        question = get_question(self.question_url.get())
+        cookie = self.cookie.get()
+        check_status = False
+        if check_question_url and check_cookie and check_save_as and check_retry_times and self.check_version == True:
+            if check_question_url and check_cookie:
+                check_status = check_valid_cookie_url(cookie, question)
+                if check_status != True:
+                    self.output.insert(END, f'\n{check_status}', 'red')
 
         self.output.see(END)
 
@@ -318,16 +330,13 @@ class Metabase_Retry:
                 params = get_params(cookie=self.cookie.get(), question_url=self.question_url.get())
                 update_params_db(question_url=self.question_url.get(), params=params, db_path=f'{self.metabase_retry_path}/params.db')
 
-
+            # Run query
             self.output.insert(END, '\nStart running the query.')
             self.output.see(END)
 
             retries = int(self.retry_times.get())
-            save_as = str(Path.home() / self.save_as.get())
             self.counter = 0
-
             start_time = time.time()
-
             if retries > 0:
                 df = self.metabase_question_query.retry_with(wait=wait_fixed(5), stop=stop_after_attempt(retries))(self, cookie=cookie, question=question, param=params)
             else:
@@ -336,11 +345,11 @@ class Metabase_Retry:
             # Save
             try:
                 if self.save_as.get().split('.')[-1] == 'xlsx':
-                    df.to_excel(save_as, index=False)
-                    self.output.insert(END, f'\nThe Excel file has been saved! {random_emoji()}', 'green')
+                    df.to_excel(file_path, index=False)
+                    self.output.insert(END, f'\nThe Excel file has been saved as {file_path} ! {random_emoji()}', 'green')
                 elif self.save_as.get().split('.')[-1] == 'csv':
-                    df.to_csv(save_as, index=False)
-                    self.output.insert(END, f'\nThe CSV file has been saved! {random_emoji()}', 'green')
+                    df.to_csv(file_path, index=False)
+                    self.output.insert(END, f'\nThe CSV file has been saved as {file_path}! {random_emoji()}', 'green')
                 self.output.see(END)
             except Exception as e:
                 self.output.insert(END, f'\n{e}', 'red')
