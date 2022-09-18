@@ -3,6 +3,7 @@ import sys
 import tkinter.messagebox
 from tkinter import *
 from tkinter import ttk
+from tkinter import filedialog
 import threading
 
 # For getting parameters
@@ -132,20 +133,20 @@ class Metabase_Retry:
         ttk.Label(mainframe, text="Question URL").grid(column=1, row=1, sticky=W)
         self.question_url = StringVar()
         input_question_url = ttk.Entry(mainframe, textvariable=self.question_url, width=50) # Only set width for one Entry, anothers Entry will responsive with sticky.
-        input_question_url.grid(column=2, row=1, sticky=(W,E))
+        input_question_url.grid(column=2, row=1, sticky=(W,E), columnspan=2)
 
         # Area 1: Input Cookie
         ttk.Label(mainframe, text="Cookie").grid(column=1, row=2, sticky=W)
         self.cookie = StringVar()
         input_cookie = ttk.Entry(mainframe, textvariable=self.cookie)
-        input_cookie.grid(column=2, row=2, sticky=(W,E))
+        input_cookie.grid(column=2, row=2, sticky=(W,E), columnspan=2)
 
         # Area 1: Input save_as
         ttk.Label(mainframe, text="Save as (xlsx, csv)").grid(column=1, row=3, sticky=W)
         self.save_as = StringVar()
-        input_save_as = ttk.Entry(mainframe, textvariable=self.save_as)
+        input_save_as = ttk.Entry(mainframe, textvariable=self.save_as, width=40)
         input_save_as.grid(column=2, row=3, sticky=(W,E))
-
+        ttk.Button(mainframe, text="Browse", command=lambda: threading.Thread(target=self.save_as_file, daemon=True).start()).grid(column=3, row=3, sticky=E)
 
         # Area 1: Input Retry times
         ttk.Label(mainframe, text="Retry times (0 = ∞)").grid(column=1, row=4, sticky=W)
@@ -153,13 +154,28 @@ class Metabase_Retry:
         input_retry_times = ttk.Entry(mainframe, width=4, textvariable=self.retry_times)
         input_retry_times.grid(column=2, row=4, sticky=(W))
 
+        # Area 1: Button
+        button_frame = ttk.Frame(mainframe)
+        button_frame.grid(column=2, row=4, sticky=E, columnspan=2)
         # Area 1: Button to run
-        ttk.Button(mainframe, text="Run & Download", command=lambda : threading.Thread(target=self.handle_app, daemon=True).start(), default="active").grid(column=2, row=4, sticky=E)
+        ttk.Button(button_frame, text="Run & Download", command=lambda : threading.Thread(target=self.handle_app, daemon=True).start(), default="active").grid(column=3, row=1, sticky=E)
+        # Area 1: Button to stop
+        # ttk.Button(button_frame, text="Stop").grid(column=2, row=1, sticky=E, padx=10)
+
+        # Area 2: Area to print the process.
+        # Area 2: Text box
+        self.output = Text(mainframe, height=15, width=70, pady=5, padx=5, wrap=WORD, blockcursor=TRUE, borderwidth=2, relief="sunken")
+        self.output.grid(column=1, row=5, sticky=(W, E, S, N), columnspan=3)
+        self.output.tag_config('red', foreground='red')
+        self.output.tag_config('green', foreground='green')
+        self.output.tag_config('yellow', foreground='yellow')
+
+        ttk.Label(mainframe, text="Powered by KAM - Analyst").grid(column=1, row=6, sticky=W, columnspan=3)
 
         # Area 1: Auto save_as and fill user input.
         # Auto fill Question URL
         try:
-            with open (f'{self.metabase_retry_path}/question_url.txt', 'r') as f:
+            with open(f'{self.metabase_retry_path}/question_url.txt', 'r') as f:
                 input_question_url.insert(0, f.read())
         except:
             with open(f'{self.metabase_retry_path}/question_url.txt', 'w') as f:
@@ -167,7 +183,7 @@ class Metabase_Retry:
 
         # Auto fill Cookie
         try:
-            with open (f'{self.metabase_retry_path}/cookie.txt', 'r') as f:
+            with open(f'{self.metabase_retry_path}/cookie.txt', 'r') as f:
                 input_cookie.insert(0, f.read())
         except:
             with open(f'{self.metabase_retry_path}/cookie.txt', 'w') as f:
@@ -175,37 +191,24 @@ class Metabase_Retry:
 
         # Auto fill Save as
         try:
-            with open (f'{self.metabase_retry_path}/save_as.txt', 'r') as f:
+            with open(f'{self.metabase_retry_path}/save_as.txt', 'r') as f:
                 input_save_as.insert(0, f.read())
         except:
-            input_save_as.insert(0, 'Downloads/query.xlsx')
             with open(f'{self.metabase_retry_path}/save_as.txt', 'w') as f:
-                f.write('Downloads/query.xlsx')
+                pass
 
         # Auto Retry times
         try:
-            with open (f'{self.metabase_retry_path}/retry_times.txt', 'r') as f:
+            with open(f'{self.metabase_retry_path}/retry_times.txt', 'r') as f:
                 input_retry_times.insert(0, f.read())
         except:
             input_retry_times.insert(0, '0')
             with open(f'{self.metabase_retry_path}/retry_times.txt', 'w') as f:
                 f.write('0')
 
-        # Area 2: Area to print the process.
-        # Area 2: Text box
-        self.output = Text(mainframe, height=15, width=70, pady=5, padx=5, wrap=WORD, blockcursor=TRUE, borderwidth=2, relief="sunken")
-        self.output.grid(column=1, row=5, sticky=(W, E, S, N), columnspan=2)
-        self.output.tag_config('red', foreground='red')
-        self.output.tag_config('green', foreground='green')
-        self.output.tag_config('yellow', foreground='yellow')
-
-        ttk.Label(mainframe, text="Powered by KAM - Analyst").grid(column=1, row=6, sticky=W, columnspan=2)
-
         # Adding padding for all child elements
         for child in mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
-        # for child in secondframe.winfo_children():
-        #     child.grid_configure(padx=5, pady=5)
 
         # Auto focus on a field
         input_question_url.focus()
@@ -216,6 +219,10 @@ class Metabase_Retry:
         # Notifying user to update app
         if self.check_version == False:
             self.output.insert(END, f'Please update the app to the latest version {self.latest_version}. The current version is {self.current_version}.', 'red')
+
+    def save_as_file(self):
+        folder_selected = filedialog.asksaveasfilename(typevariable=StringVar, filetypes=[('Excel file', '*.xlsx'), ('CSV file', '*.csv')])
+        self.save_as.set(folder_selected)
 
     # Metabase query function
     @retry(wait=wait_fixed(5))
@@ -243,12 +250,13 @@ class Metabase_Retry:
         self.output.see(END)
         return _df
 
-
     def handle_app(self):
         # Notifying user to update app
         if self.check_version == False:
             self.output.insert(END, f'\nDon\'t be stubborn. Please download the new version, Ninjas! {random_emoji()}', 'red')
 
+        # Check valid infomation
+        # Check URL
         check_question_url = False
         if self.question_url.get() == '':
             self.output.insert(END, f'\nPlease fill in the Question URL', 'red')
@@ -259,6 +267,7 @@ class Metabase_Retry:
             with open(f'{self.metabase_retry_path}/question_url.txt', 'w') as f:
                 f.write(self.question_url.get())
 
+        # Check Cookie
         check_cookie = False
         if self.cookie.get() == '':
             self.output.insert(END, '\nPlease fill in the Cookie', 'red')
@@ -269,28 +278,18 @@ class Metabase_Retry:
             with open(f'{self.metabase_retry_path}/cookie.txt', 'w') as f:
                 f.write(self.cookie.get())
 
+        # Check Save as
         check_save_as = False
         if self.save_as.get() == '':
-            self.output.insert(END, '\nPlease fill in the Save as. Example Downloads/query.xlsx', 'red')
-        elif not 'csv' in self.save_as.get() and not 'xlsx' in self.save_as.get():
+            self.output.insert(END, '\nPlease fill in the Save as.', 'red')
+        elif not '.csv' in self.save_as.get() and not '.xlsx' in self.save_as.get():
             self.output.insert(END, '\nPlease include .xlsx or .csv for file name.', 'red')
         else:
-            path_split = self.save_as.get().split('/')
-            if '/' in self.save_as.get():
-                folder_path = str(Path.home())
-                for i in path_split[:-1]:
-                    folder_path = str(os.path.join(folder_path, i))
-            else:
-                folder_path = str(os.path.join(Path.home(), 'Downloads'))
-            file_path = str(os.path.join(folder_path, path_split[-1]))
+            check_save_as = True
+            with open(f'{self.metabase_retry_path}/save_as.txt', 'w') as f:
+                f.write(self.save_as.get())
 
-            if os.path.isdir(folder_path):
-                check_save_as = True
-                with open(f'{self.metabase_retry_path}/save_as.txt', 'w') as f:
-                    f.write(self.save_as.get())
-            else:
-                self.output.insert(END, '\nThis directory does not exist.', 'red')
-
+        # Check Retry times
         check_retry_times = False
         if self.retry_times.get() == '':
             self.output.insert(END, '\nPlease fill in the Rety times. A valid number will be greater than or equal to 0. And 0 means infinite.', 'red')
@@ -305,6 +304,7 @@ class Metabase_Retry:
             except:
                 self.output.insert(END, '\nPlease enter a positive number.', 'red')
 
+        # Check valid Cookie and Question online
         question = get_question(self.question_url.get())
         cookie = self.cookie.get()
         check_status = False
@@ -314,13 +314,15 @@ class Metabase_Retry:
                 if check_status != True:
                     self.output.insert(END, f'\n{check_status}', 'red')
 
+        # Scroll down
         self.output.see(END)
 
+        # Start query retry
         if check_question_url and check_cookie and check_save_as and check_retry_times and check_status==True and self.check_version==True:
             self.output.insert(END, '\nValid information, start processing.', 'green')
             self.output.see(END)
 
-
+            # Get parameters
             check_params = check_params_db(question_url=self.question_url.get(), db_path=f'{self.metabase_retry_path}/params.db')
             if check_params != False:
                 self.output.insert(END, '\nThis Question URL already has parameters stored.', 'green')
@@ -337,8 +339,8 @@ class Metabase_Retry:
             self.output.see(END)
 
             retries = int(self.retry_times.get())
-            self.counter = 0
-            start_time = time.time()
+            self.counter = 0 # To print retry times
+            start_time = time.time() # To calculate how long it took
             if retries > 0:
                 df = self.metabase_question_query.retry_with(wait=wait_fixed(5), stop=stop_after_attempt(retries))(self, cookie=cookie, question=question, param=params)
             else:
@@ -347,16 +349,17 @@ class Metabase_Retry:
             # Save
             try:
                 if self.save_as.get().split('.')[-1] == 'xlsx':
-                    df.to_excel(file_path, index=False)
-                    self.output.insert(END, f'\nThe Excel file has been saved as {file_path} ! {random_emoji()}', 'green')
+                    df.to_excel(self.save_as.get(), index=False)
+                    self.output.insert(END, f'\nThe Excel file has been saved as {self.save_as.get()} ! {random_emoji()}', 'green')
                 elif self.save_as.get().split('.')[-1] == 'csv':
-                    df.to_csv(file_path, index=False)
-                    self.output.insert(END, f'\nThe CSV file has been saved as {file_path}! {random_emoji()}', 'green')
+                    df.to_csv(self.save_as.get(), index=False)
+                    self.output.insert(END, f'\nThe CSV file has been saved as {self.save_as.get()}! {random_emoji()}', 'green')
                 self.output.see(END)
             except Exception as e:
                 self.output.insert(END, f'\n{e}', 'red')
                 self.output.see(END)
 
+            # Print how long it took
             end_time = time.time()
             took_time = round(end_time - start_time)
             if took_time < 60:
@@ -365,17 +368,29 @@ class Metabase_Retry:
                 self.output.insert(END, f'\nIt took {took_time//60} minutes {took_time%60} seconds')
             self.output.see(END)
 
-# def destroyer():
-#     root.quit()
-#     root.destroy()
-#     sys.exit()
 
 root = Tk()
-
-root.eval('tk::PlaceWindow . center') # Center screen
 Metabase_Retry(root)
 
-# Stop process after closing window
-# root.protocol("WM_DELETE_WINDOW", destroyer)
+# Auto fixed size and center window on the screen
+root.eval('tk::PlaceWindow . center')
+# Disable user resize window
+root.resizable(False, False)
+
+# Auto fixed size and center window on the screen (Old way)
+# Window size
+# window_width = root.winfo_width()
+# window_height = root.winfo_height()
+#
+# # Get the screen dimension
+# screen_width = root.winfo_screenwidth()
+# screen_height = root.winfo_screenheight()
+#
+# # Gind the center point
+# center_x = int(screen_width/2 - window_width / 2)
+# center_y = int(screen_height/2 - window_height / 2)
+#
+# # Center screen
+# root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
 root.mainloop()
