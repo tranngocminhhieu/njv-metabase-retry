@@ -377,20 +377,4 @@ root.eval('tk::PlaceWindow . center')
 # Disable user resize window
 root.resizable(False, False)
 
-# Auto fixed size and center window on the screen (Old way)
-# Window size
-# window_width = root.winfo_width()
-# window_height = root.winfo_height()
-#
-# # Get the screen dimension
-# screen_width = root.winfo_screenwidth()
-# screen_height = root.winfo_screenheight()
-#
-# # Gind the center point
-# center_x = int(screen_width/2 - window_width / 2)
-# center_y = int(screen_height/2 - window_height / 2)
-#
-# # Center screen
-# root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
-
 root.mainloop()
