@@ -4,8 +4,8 @@ import tkinter.messagebox
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
-# import webbrowser
-import subprocess
+import webbrowser # To open folder macOS and Windows
+# import subprocess # To open folder but work with macOS
 import threading
 
 # For getting parameters
@@ -232,11 +232,14 @@ class Metabase_Retry:
 
     def open_folder(self):
         folder_path = os.path.split(self.save_as.get())[0]
-        # webbrowser.open('file:///' + folder_path)
+        
         if os.path.isdir(folder_path):
-            subprocess.Popen(['open', folder_path])
+            # subprocess.Popen(['open', folder_path])
+            webbrowser.open('file:///' + folder_path)
+
         else:
             self.output.insert(END, f'{folder_path} does not exist.', 'red')
+            self.output.see(END)
 
     # def stop_query(self):
     #     pass
