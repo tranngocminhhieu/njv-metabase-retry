@@ -4,6 +4,8 @@ import tkinter.messagebox
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+# import webbrowser
+import subprocess
 import threading
 
 # For getting parameters
@@ -29,6 +31,7 @@ import time
 import os
 from pathlib import Path
 import sqlite3
+import subprocess
 
 # For fun :))
 import random
@@ -120,14 +123,15 @@ class Metabase_Retry:
 
         # App name
         root.title("NinjaVan Metabase Retry")
-        root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=1)
+        # root.columnconfigure(0, weight=1)
+        # root.rowconfigure(0, weight=1)
 
         # Area 1: Area for users to interact with the application.
         mainframe = ttk.Frame(root, padding="15 15 15 15")
         mainframe.grid(column=0, row=0, sticky=(W, E, S, N))
         # mainframe.grid_columnconfigure(0, weight=1)
         # mainframe.grid_rowconfigure(0, weight=1)
+        mainframe.columnconfigure(2, weight=1) # Column 2 will auto max width
 
         # Area 1: Input Question URL
         ttk.Label(mainframe, text="Question URL").grid(column=1, row=1, sticky=W)
@@ -141,10 +145,11 @@ class Metabase_Retry:
         input_cookie = ttk.Entry(mainframe, textvariable=self.cookie)
         input_cookie.grid(column=2, row=2, sticky=(W,E), columnspan=2)
 
+
         # Area 1: Input save_as
         ttk.Label(mainframe, text="Save as (xlsx, csv)").grid(column=1, row=3, sticky=W)
         self.save_as = StringVar()
-        input_save_as = ttk.Entry(mainframe, textvariable=self.save_as, width=40)
+        input_save_as = ttk.Entry(mainframe, textvariable=self.save_as)
         input_save_as.grid(column=2, row=3, sticky=(W,E))
         ttk.Button(mainframe, text="Browse", command=lambda: threading.Thread(target=self.save_as_file, daemon=True).start()).grid(column=3, row=3, sticky=E)
 
@@ -159,8 +164,9 @@ class Metabase_Retry:
         button_frame.grid(column=2, row=4, sticky=E, columnspan=2)
         # Area 1: Button to run
         ttk.Button(button_frame, text="Run & Download", command=lambda : threading.Thread(target=self.handle_app, daemon=True).start(), default="active").grid(column=3, row=1, sticky=E)
-        # Area 1: Button to stop
-        # ttk.Button(button_frame, text="Stop").grid(column=2, row=1, sticky=E, padx=10)
+        # Area 1: Button to open folder
+        ttk.Button(button_frame, text="Open folder", command=lambda : threading.Thread(target=self.open_folder, daemon=True).start()).grid(column=2, row=1, sticky=E, padx=10)
+        # ttk.Button(button_frame, text="Stop", command=lambda : threading.Thread(target=self.stop_query(), daemon=True).start()).grid(column=1, row=1, sticky=E, padx=10)
 
         # Area 2: Area to print the process.
         # Area 2: Text box
@@ -224,6 +230,17 @@ class Metabase_Retry:
         folder_selected = filedialog.asksaveasfilename(typevariable=StringVar, filetypes=[('Excel file', '*.xlsx'), ('CSV file', '*.csv')])
         self.save_as.set(folder_selected)
 
+    def open_folder(self):
+        folder_path = os.path.split(self.save_as.get())[0]
+        # webbrowser.open('file:///' + folder_path)
+        if os.path.isdir(folder_path):
+            subprocess.Popen(['open', folder_path])
+        else:
+            self.output.insert(END, f'{folder_path} does not exist.', 'red')
+
+    # def stop_query(self):
+    #     pass
+
     # Metabase query function
     @retry(wait=wait_fixed(5))
     def metabase_question_query(self, cookie, question, param='[]', *args):
@@ -251,6 +268,7 @@ class Metabase_Retry:
         return _df
 
     def handle_app(self):
+        self.stop_query = False
         # Notifying user to update app
         if self.check_version == False:
             self.output.insert(END, f'\nDon\'t be stubborn. Please download the new version, Ninjas! {random_emoji()}', 'red')
@@ -280,8 +298,11 @@ class Metabase_Retry:
 
         # Check Save as
         check_save_as = False
+        folder_path = os.path.split(self.save_as.get())[0]
         if self.save_as.get() == '':
             self.output.insert(END, '\nPlease fill in the Save as.', 'red')
+        elif not os.path.isdir(folder_path):
+            self.output.insert(END, f'{folder_path} does not exist.', 'red')
         elif not '.csv' in self.save_as.get() and not '.xlsx' in self.save_as.get():
             self.output.insert(END, '\nPlease include .xlsx or .csv for file name.', 'red')
         else:
@@ -367,6 +388,7 @@ class Metabase_Retry:
             else:
                 self.output.insert(END, f'\nIt took {took_time//60} minutes {took_time%60} seconds')
             self.output.see(END)
+
 
 
 root = Tk()
