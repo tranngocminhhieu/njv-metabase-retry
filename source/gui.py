@@ -4,8 +4,8 @@ import tkinter.messagebox
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
-import webbrowser # To open folder macOS and Windows
-# import subprocess # To open folder but work with macOS
+import webbrowser # To open folder macOS and Windows in the same syntax
+# import subprocess # To open folder but different syntax for both OS
 import threading
 
 # For getting parameters
