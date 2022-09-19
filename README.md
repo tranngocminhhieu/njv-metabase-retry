@@ -6,11 +6,12 @@ To convert a Python script to a macOS application, run this shell on a macOS dev
 pip install pyinstaller
 
 pyinstaller --clean --add-data 'ca.crt:seleniumwire' --add-data 'ca.key:seleniumwire' --onefile --windowed --icon="icon.icns" gui.py
-
+```
 
 ### Windows
 Use pyinstaller directly on GitHub instead of pip to avoid Windows Defender false positive flagging (warning virus)
 Download pyinstaller on https://github.com/pyinstaller/pyinstaller/releases
+read: https://python.plainenglish.io/pyinstaller-exe-false-positive-trojan-virus-resolved-b33842bd3184
 ```
 # cd to pyinstaller folder
 
