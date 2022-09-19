@@ -222,7 +222,7 @@ class Metabase_Retry:
         input_question_url.focus()
 
         # Blind Enter button to do run
-        root.bind("<Return>", lambda zzz : threading.Thread(target=self.handle_app, daemon=True).start()) # threading help avoid freezing app daemon=True help stop process after closing window
+        root.bind("<Return>", lambda zzz : threading.Thread(target=self.run_and_download, daemon=True).start()) # threading help avoid freezing app daemon=True help stop process after closing window
 
         # Notifying user to update app
         if self.check_version == False:
