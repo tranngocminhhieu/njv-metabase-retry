@@ -18,7 +18,7 @@ Download pyinstaller on https://github.com/pyinstaller/pyinstaller/releases
 python.exe setup.py install
 
 # cd to source
-pyinstaller --clean --add-data "ca.crt;seleniumwire" --add-data "ca.key;seleniumwire" --onefile --windowed gui.py
+pyinstaller --clean --add-data "ca.crt;seleniumwire" --add-data "ca.key;seleniumwire" --onefile --windowed --icon="icon.ico" gui.py
 ```
 ca.crt and ca.key copy from site-packages/seleniumwire.
 
