@@ -3,6 +3,4 @@
 .idea
 source/dist
 source/build
-app/*.app
 *.spec
-*.exe
