@@ -4,10 +4,10 @@ To convert a Python script to a macOS application, run this shell on a macOS dev
 pip install pyinstaller
 
 # macOS
-pyinstaller --clean --add-data 'ca.crt:seleniumwire' --add-data 'ca.key:seleniumwire' --onefile -windowed --icon="icon.icns" gui.py
+pyinstaller --clean --add-data 'ca.crt:seleniumwire' --add-data 'ca.key:seleniumwire' --onefile --windowed --icon="icon.icns" gui.py
 
 # Windows
-pyinstaller --clean --add-data "ca.crt;seleniumwire" --add-data "ca.key;seleniumwire" --onefile -windowed gui.py
+pyinstaller --clean --add-data "ca.crt;seleniumwire" --add-data "ca.key;seleniumwire" --onefile --windowed gui.py
 ```
 ca.crt and ca.key copy from site-packages/seleniumwire.
 ## How to force users to download the latest version
