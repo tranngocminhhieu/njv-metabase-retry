@@ -36,7 +36,7 @@ import subprocess
 # For fun :))
 import random
 
-from multiprocessing import Process
+# from multiprocessing import Process
 
 # Getting the question ID from question URL
 def get_question(question_url):
