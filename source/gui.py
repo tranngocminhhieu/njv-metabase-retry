@@ -278,7 +278,7 @@ class Metabase_Retry:
         _retries = int(retries)
         _save_as = str(save_as)
         _param = str(param)
-        self.output.insert(END, f'\nStart run query {_question} and save as {_save_as}.')
+        self.output.insert(END, f'\nStart running query {_question} and save as {_save_as}.')
         self.output.see(END)
         if retries > 0:
             df = self.metabase_question_query.retry_with(wait=wait_fixed(5), stop=stop_after_attempt(_retries))(self, cookie=_cookie, question=_question, param=_param)
