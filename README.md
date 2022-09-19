@@ -1,15 +1,27 @@
 ## How to convert py to app
 To convert a Python script to a macOS application, run this shell on a macOS device. And vice versa, to convert Python script to a Windows application, run this shell on a Windows device.
+
+### macOS
 ```
 pip install pyinstaller
 
-# macOS
 pyinstaller --clean --add-data 'ca.crt:seleniumwire' --add-data 'ca.key:seleniumwire' --onefile --windowed --icon="icon.icns" gui.py
 
-# Windows
+
+### Windows
+Use pyinstaller directly on GitHub instead of pip to avoid Windows Defender false positive flagging (warning virus)
+Download pyinstaller on https://github.com/pyinstaller/pyinstaller/releases
+```
+# cd to pyinstaller folder
+
+# activate your env and run this shell to install pyinstaller
+python.exe setup.py install
+
+# cd to source
 pyinstaller --clean --add-data "ca.crt;seleniumwire" --add-data "ca.key;seleniumwire" --onefile --windowed gui.py
 ```
 ca.crt and ca.key copy from site-packages/seleniumwire.
+
 ## How to force users to download the latest version
 We can change the version in https://pastebin.com/raw/0uJU5URe, the application will check the version when opening automatically. If the version is not the latest version, the application can not run anymore.
 
