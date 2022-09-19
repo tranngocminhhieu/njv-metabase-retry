@@ -36,6 +36,8 @@ import subprocess
 # For fun :))
 import random
 
+from multiprocessing import Process
+
 # Getting the question ID from question URL
 def get_question(question_url):
     question = question_url.split('/question/')[-1].split('-')[0]
@@ -166,7 +168,7 @@ class Metabase_Retry:
         ttk.Button(button_frame, text="Run & Download", command=lambda : threading.Thread(target=self.handle_app, daemon=True).start(), default="active").grid(column=3, row=1, sticky=E)
         # Area 1: Button to open folder
         ttk.Button(button_frame, text="Open folder", command=lambda : threading.Thread(target=self.open_folder, daemon=True).start()).grid(column=2, row=1, sticky=E, padx=10)
-        # ttk.Button(button_frame, text="Stop", command=lambda : threading.Thread(target=self.stop_query(), daemon=True).start()).grid(column=1, row=1, sticky=E, padx=10)
+        # ttk.Button(button_frame, text="Stop", command=lambda : threading.Thread(target=self.stop_query, daemon=True).start()).grid(column=1, row=1, sticky=E)
 
         # Area 2: Area to print the process.
         # Area 2: Text box
@@ -242,7 +244,7 @@ class Metabase_Retry:
             self.output.see(END)
 
     # def stop_query(self):
-    #     pass
+    #     root.quit()
 
     # Metabase query function
     @retry(wait=wait_fixed(5))
@@ -270,8 +272,33 @@ class Metabase_Retry:
         self.output.see(END)
         return _df
 
+    def run_and_download(self, cookie, question, retries, save_as, param='[]', *args):
+        _cookie = str(cookie)
+        _question = str(question)
+        _retries = int(retries)
+        _save_as = str(save_as)
+        _param = str(param)
+        self.output.insert(END, f'\nStart run query {_question} and save as {_save_as}.')
+        self.output.see(END)
+        if retries > 0:
+            df = self.metabase_question_query.retry_with(wait=wait_fixed(5), stop=stop_after_attempt(_retries))(self, cookie=_cookie, question=_question, param=_param)
+        else:
+            df = self.metabase_question_query(cookie=_cookie, question=_question, param=_param)
+        # Save
+        try:
+            if _save_as.split('.')[-1] == 'xlsx':
+                df.to_excel(_save_as, index=False)
+                self.output.insert(END, f'\nThe Excel file has been saved as {_save_as} ! {random_emoji()}', 'green')
+            elif _save_as.split('.')[-1] == 'csv':
+                df.to_csv(_save_as, index=False, encoding='utf-8-sig')
+                self.output.insert(END, f'\nThe CSV file has been saved as {_save_as}! {random_emoji()}', 'green')
+            self.output.see(END)
+        except Exception as e:
+            self.output.insert(END, f'\n{e}', 'red')
+            self.output.see(END)
+
+
     def handle_app(self):
-        self.stop_query = False
         # Notifying user to update app
         if self.check_version == False:
             self.output.insert(END, f'\nDon\'t be stubborn. Please download the new version, Ninjas! {random_emoji()}', 'red')
@@ -359,29 +386,13 @@ class Metabase_Retry:
                 update_params_db(question_url=self.question_url.get(), params=params, db_path=f'{self.metabase_retry_path}/params.db')
 
             # Run query
-            self.output.insert(END, '\nStart running the query.')
-            self.output.see(END)
-
             retries = int(self.retry_times.get())
+            save_as = self.save_as.get()
             self.counter = 0 # To print retry times
             start_time = time.time() # To calculate how long it took
-            if retries > 0:
-                df = self.metabase_question_query.retry_with(wait=wait_fixed(5), stop=stop_after_attempt(retries))(self, cookie=cookie, question=question, param=params)
-            else:
-                df = self.metabase_question_query(cookie=cookie, question=question, param=params)
 
-            # Save
-            try:
-                if self.save_as.get().split('.')[-1] == 'xlsx':
-                    df.to_excel(self.save_as.get(), index=False)
-                    self.output.insert(END, f'\nThe Excel file has been saved as {self.save_as.get()} ! {random_emoji()}', 'green')
-                elif self.save_as.get().split('.')[-1] == 'csv':
-                    df.to_csv(self.save_as.get(), index=False)
-                    self.output.insert(END, f'\nThe CSV file has been saved as {self.save_as.get()}! {random_emoji()}', 'green')
-                self.output.see(END)
-            except Exception as e:
-                self.output.insert(END, f'\n{e}', 'red')
-                self.output.see(END)
+            self.run_and_download(cookie=cookie, question=question, retries=retries, save_as=save_as, param=params)
+
 
             # Print how long it took
             end_time = time.time()
