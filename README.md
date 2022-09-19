@@ -9,7 +9,7 @@ pyinstaller --clean --add-data 'ca.crt:seleniumwire' --add-data 'ca.key:selenium
 ```
 
 ### Windows
-Use pyinstaller directly on GitHub instead of pip to avoid Windows Defender false positive flagging (warning virus).
+Install pyinstaller from GitHub instead of pip to avoid Windows Defender false positive flagging (warning virus).
 read: https://python.plainenglish.io/pyinstaller-exe-false-positive-trojan-virus-resolved-b33842bd3184
 
 Download pyinstaller on https://github.com/pyinstaller/pyinstaller/releases
