@@ -9,9 +9,11 @@ pyinstaller --clean --add-data 'ca.crt:seleniumwire' --add-data 'ca.key:selenium
 ```
 
 ### Windows
-Use pyinstaller directly on GitHub instead of pip to avoid Windows Defender false positive flagging (warning virus)
-Download pyinstaller on https://github.com/pyinstaller/pyinstaller/releases
+Use pyinstaller directly on GitHub instead of pip to avoid Windows Defender false positive flagging (warning virus).
 read: https://python.plainenglish.io/pyinstaller-exe-false-positive-trojan-virus-resolved-b33842bd3184
+
+Download pyinstaller on https://github.com/pyinstaller/pyinstaller/releases
+
 ```
 # cd to pyinstaller folder
 
@@ -21,7 +23,7 @@ python.exe setup.py install
 # cd to source
 pyinstaller --clean --add-data "ca.crt;seleniumwire" --add-data "ca.key;seleniumwire" --onefile --windowed --icon="icon.ico" gui.py
 ```
-ca.crt and ca.key copy from site-packages/seleniumwire.
+`ca.crt` and `ca.key` copy from `site-packages/seleniumwire`.
 
 ## How to force users to download the latest version
 We can change the version in https://pastebin.com/raw/0uJU5URe, the application will check the version when opening automatically. If the version is not the latest version, the application can not run anymore.
