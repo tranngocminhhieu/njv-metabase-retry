@@ -240,7 +240,7 @@ class Metabase_Retry:
             webbrowser.open('file:///' + folder_path)
 
         else:
-            self.output.insert(END, f'{folder_path} does not exist.', 'red')
+            self.output.insert(END, f'\n{folder_path} does not exist.', 'red')
             self.output.see(END)
 
     # def stop_query(self):
