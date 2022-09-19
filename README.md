@@ -30,6 +30,7 @@ We can change the version in https://pastebin.com/raw/0uJU5URe, the application 
 3. Getting data.
 - The app will get parameters of the question URL if it is not exists.
 - The app will get json data with retry function.
+- The app can run multiple queries at the same time.
 
 4. Saving file.
 - The app can save the query result to Excel and CSV with directory of user.
