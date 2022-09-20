@@ -54,7 +54,13 @@ def get_params(cookie, question_url):
     for request in driver.requests:
         if request.method == 'POST' and '/api/card/' in request.url:
             payload = request.body
-            params = json.dumps(json.loads(payload)['parameters'])
+            params = json.loads(payload)['parameters']
+            for p in params:
+                try:
+                    del p['id']
+                except:
+                    pass
+            params = json.dumps(params)
             return params
 
 # Checking valid cookie and quesion
