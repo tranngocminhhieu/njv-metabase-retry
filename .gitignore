@@ -4,3 +4,4 @@ source/dist
 source/build
 *.spec
 *.ipynb_checkpoints*
+*.ipynb
