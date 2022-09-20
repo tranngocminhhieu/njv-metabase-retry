@@ -1,5 +1,6 @@
-.DS_Store
+*.DS_Store
 .idea
 source/dist
 source/build
 *.spec
+*.ipynb_checkpoints*
