@@ -116,7 +116,7 @@ class Metabase_Retry:
         # Area 1: Input Question URL
         ttk.Label(mainframe, text="Question URL").grid(column=1, row=1, sticky=W)
         self.question_url = StringVar()
-        self.input_question_url = ttk.Entry(mainframe, textvariable=self.question_url, width=70) # Only set width for one Entry, anothers Entry will responsive with sticky.
+        self.input_question_url = ttk.Entry(mainframe, textvariable=self.question_url, width=100) # Only set width for one Entry, anothers Entry will responsive with sticky.
         self.input_question_url.grid(column=2, row=1, sticky=(W,E), columnspan=2)
 
         # Area 1: Input Cookie
@@ -351,11 +351,11 @@ class Metabase_Retry:
                 self.output.insert(END, f'\nPlease enter a positive number.', 'red')
 
         # Check valid Cookie and Question online
-        self.output.insert(END, f'\nVerifying your information on the server.')
-        self.output.see(END)
         question = get_question(self.question_url.get())
         check_status = False
         if check_question_url and check_cookie and check_save_as and check_retry_times and self.check_version == True:
+            self.output.insert(END, f'\nVerifying your information on the server.')
+            self.output.see(END)
             check_status = check_valid_cookie_url(self.cookie.get(), question, self.question_url.get())
             if check_status != True:
                 self.output.insert(END, f'\n{check_status}', 'red')
