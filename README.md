@@ -31,37 +31,37 @@ We can change the version in https://pastebin.com/raw/0uJU5URe, the application 
 ## Changelog
 ### 1.1
 - User can delete input (Documents/metabase_retry) with a button.
-- User can scroll the text box.
-- User can quickly add multiple queries without wating for the text box's response.
-- Fix wrong counter when running multiple queries.
-- Remove save parameters to local host feature.
-- Check valid parameters online if '?' not in question url.
-- Print query error more detail.
+- User can scroll through the text box.
+- User can quickly add multiple queries without waiting for the text box's response.
+- Fix the wrong counter when running multiple queries.
+- Remove save parameters to the local host feature.
+- Check valid parameters online if '?' is not the in the question URL.
+- Print query error in more detail.
 
 
 ### 1.0
-1. Checking the user input infomations.
+1. Checking the user input information.
 - The app will check valid question URL.
 - The app will check valid cookie.
-- The app will check valid status of question URL and cookie.
+- The app will check valid status of the question URL and cookie.
 - The app will check valid directory.
 - The app will check valid number of retry times.
 
 2. Storing the application data for future use.
 - The app will create a directory in Documents/metabase_retry.
-- THe app will save the user input if it is vaid.
+- The app will save the user input if it is valid.
 - The app will save the parameters of each question URL.
 
 3. Getting data.
-- The app will get parameters of the question URL if it is not exists.
-- The app will get json data with retry function.
+- The app will get the parameters of the question URL if it does not exist.
+- The app will get JSON data with the retry function.
 - The app can run multiple queries at the same time.
 
 4. Saving file.
-- The app can save the query result to Excel and CSV with directory of user.
-- Downloads is default directory if user input does not contain any directory.
+- The app can save the query result to Excel and CSV with a directory of users.
+- Downloads is the default directory if user input does not contain any directory.
 
-5. Interacting with user.
-- The app will print error, process to the Text box. Random emoji will be included for some case.
+5. Interacting with users.
+- The app will print an error, and the processing to the Text box. Random emojis will be included for cases.
 - User can click Button or Enter to run.
-- User can open folder with button.
+- User can open a folder with a button.
