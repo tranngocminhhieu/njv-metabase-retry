@@ -31,10 +31,12 @@ We can change the version in https://pastebin.com/raw/0uJU5URe, the application 
 ## Changelog
 ### 1.1
 - User can delete input (Documents/metabase_retry) with a button.
-- Fix wrong counter when run multiple query.
-- Remove save parameters feature.
-- Count serius error and stop query if it had 10 serius error.
+- User can scroll the text box.
+- User can quickly add multiple queries without wating for the text box's response.
+- Fix wrong counter when running multiple queries.
+- Remove save parameters to local host feature.
 - Check valid parameters online if '?' not in question url.
+- Print query error more detail.
 
 
 ### 1.0
