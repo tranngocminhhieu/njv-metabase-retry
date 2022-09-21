@@ -99,12 +99,12 @@ def random_emoji(feeling='happy'):
 class Metabase_Retry:
     def __init__(self, root):
         # The version help force user update app
-        self.current_version = '1.0'
+        self.current_version = 1.1
         try:
-            self.latest_version = requests.get('https://pastebin.com/raw/0uJU5URe').text
+            self.latest_version = float(requests.get('https://pastebin.com/raw/0uJU5URe').text)
         except:
             self.latest_version = self.current_version
-        self.check_version = self.current_version == self.latest_version
+        self.check_version = self.current_version >= self.latest_version
 
         # Creating app data folder
         self.metabase_retry_path = str(Path.home() / 'Documents' / 'metabase_retry')
