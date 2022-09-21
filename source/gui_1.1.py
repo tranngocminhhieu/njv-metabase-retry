@@ -214,7 +214,7 @@ class Metabase_Retry:
 
         # Notifying user to update app
         if not self.check_version:
-            self.output.insert(END, f'Please update the app to the latest version {self.latest_version}. The current version is {self.current_version}.', 'red')
+            self.output.insert(END, f'\nPlease update the app to the latest version {self.latest_version}. The current version is {self.current_version}.', 'red')
 
         self.counter = {}
 
