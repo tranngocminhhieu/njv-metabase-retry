@@ -246,15 +246,16 @@ class Metabase_Retry:
 
     # Metabase query function
     @retry(wait=wait_fixed(5))
-    def metabase_question_query(self, cookie, question, question_url, params='[]', *args):
-        self.counter[question_url] += 1
-        self.output.insert(END,f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: Start query {question} ({self.counter[question_url]})')
+    def metabase_question_query(self, cookie, question, short_question_url, params='[]', *args):
+
+        self.counter[short_question_url] += 1
+        self.output.insert(END,f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: Start query {short_question_url} ({self.counter[short_question_url]})')
         self.output.see(END)
         try:
             res = requests.post(f'https://metabase.ninjavan.co/api/card/{question}/query/json?parameters={params}',
                                 headers={'Content-Type': 'application/json', 'X-Metabase-Session': cookie}, timeout=900)
         except Exception as e:
-            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - Timeout! {random_emoji(feeling="sad")}')
+            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {short_question_url} - Timeout! {random_emoji(feeling="sad")}')
             self.output.insert(END, f'\n{e}', 'grey')
             self.output.see(END)
             time.sleep(10)
@@ -262,7 +263,7 @@ class Metabase_Retry:
 
         # Raise error
         if not res.ok:
-            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - {res.status_code} {res.reason}, please consider stopping. {random_emoji(feeling="sad")}', 'orange')
+            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {short_question_url} - {res.status_code} {res.reason}, please consider stopping. {random_emoji(feeling="sad")}', 'orange')
             self.output.see(END)
             time.sleep(10)
             raise ConnectionError
@@ -271,14 +272,14 @@ class Metabase_Retry:
         try:
             data = res.json()
         except Exception as e:
-            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - The data is too large or corrupted after downloading, please consider re-selecting the filter with less data and try again. {random_emoji(feeling="sad")}', 'orange')
+            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {short_question_url} - The data is too large or corrupted after downloading, please consider re-selecting the filter with less data and try again. {random_emoji(feeling="sad")}', 'orange')
             self.output.insert(END, f'\n{e}', 'grey')
             self.output.see(END)
             time.sleep(10)
             raise Exception('The data is too large')
         try:
             error = data['error']  # Too many queued queries for "admin", Query exceeded the maximum execution time limit of 5.00m
-            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - {error} {random_emoji(feeling="sad")}')
+            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {short_question_url} - {error} {random_emoji(feeling="sad")}')
             self.output.see(END)
             time.sleep(10)
             raise Exception(error)
@@ -286,23 +287,23 @@ class Metabase_Retry:
             pass
         # Data
         _df = pd.DataFrame(data)
-        self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: Finish query {question} {random_emoji()}')
+        self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: Finish query {short_question_url} {random_emoji()}', 'green')
         self.output.see(END)
         return _df
 
-    def run_and_download(self, cookie, question, retries, save_as, question_url, params='[]', *args):
+    def run_and_download(self, cookie, question, retries, save_as, short_question_url, params='[]', *args):
         _cookie = copy.deepcopy(cookie)
         _question = copy.deepcopy(question)
         _retries = copy.deepcopy(retries)
         _save_as = copy.deepcopy(save_as)
         _params = copy.deepcopy(params)
-        _question_url = copy.deepcopy(question_url)
-        self.output.insert(END, f'\nStart running query {_question} and save as {_save_as}.')
+        _short_question_url = copy.deepcopy(short_question_url)
+        self.output.insert(END, f'\nStart running query {_short_question_url} and save as {_save_as}.')
         self.output.see(END)
         if retries > 0:
-            df = self.metabase_question_query.retry_with(wait=wait_fixed(5), stop=stop_after_attempt(_retries))(self, cookie=_cookie, question=_question, params=_params, question_url=_question_url)
+            df = self.metabase_question_query.retry_with(wait=wait_fixed(5), stop=stop_after_attempt(_retries))(self, cookie=_cookie, question=_question, params=_params, short_question_url=_short_question_url)
         else:
-            df = self.metabase_question_query(cookie=_cookie, question=_question, params=_params, question_url=_question_url)
+            df = self.metabase_question_query(cookie=_cookie, question=_question, params=_params, short_question_url=_short_question_url)
         # Save
         try:
             if _save_as.split('.')[-1] == 'xlsx':
@@ -313,7 +314,7 @@ class Metabase_Retry:
                 self.output.insert(END, f'\nThe CSV file has been saved as {_save_as}! {random_emoji()}', 'green')
             self.output.see(END)
         except Exception as e:
-            self.output.insert(END, f'\n{e}', 'red')
+            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {_short_question_url} - {e}', 'red')
             self.output.see(END)
 
     def handle_app(self):
@@ -419,10 +420,13 @@ class Metabase_Retry:
             # Run query
             retries = int(retries)
 
-            self.counter[question_url] = 0 # To print retry times
+            params_url = '?' + question_url.split('?')[-1] if '?' in question_url else ''
+            short_question_url = str(question) + params_url
+
+            self.counter[short_question_url] = 0 # To print retry times
 
             start_time = time.time() # To calculate how long it took
-            self.run_and_download(cookie=cookie, question=question, retries=retries, save_as=save_as, params=params, question_url=question_url)
+            self.run_and_download(cookie=cookie, question=question, retries=retries, save_as=save_as, params=params, short_question_url=short_question_url)
 
             # Print how long it took
             end_time = time.time()
