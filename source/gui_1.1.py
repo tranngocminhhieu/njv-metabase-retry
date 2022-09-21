@@ -99,7 +99,7 @@ def random_emoji(feeling='happy'):
 class Metabase_Retry:
     def __init__(self, root):
         # The version help force user update app
-        self.current_version = '1.1'
+        self.current_version = '1.0'
         try:
             self.latest_version = requests.get('https://pastebin.com/raw/0uJU5URe').text
         except:
@@ -216,7 +216,6 @@ class Metabase_Retry:
             self.output.insert(END, f'Please update the app to the latest version {self.latest_version}. The current version is {self.current_version}.', 'red')
 
         self.counter = {}
-        # self.serious_errors = {}
 
     def save_as_file(self):
         folder_selected = filedialog.asksaveasfilename(typevariable=StringVar, filetypes=[('Excel file', '*.xlsx'), ('CSV file', '*.csv')])
@@ -250,13 +249,19 @@ class Metabase_Retry:
         self.counter[question_url] += 1
         self.output.insert(END,f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: Start query {question} ({self.counter[question_url]})')
         self.output.see(END)
-        res = requests.post(f'https://metabase.ninjavan.co/api/card/{question}/query/json?parameters={params}',
-                            headers={'Content-Type': 'application/json', 'X-Metabase-Session': cookie}, timeout=600)
+        try:
+            res = requests.post(f'https://metabase.ninjavan.co/api/card/{question}/query/json?parameters={params}',
+                                headers={'Content-Type': 'application/json', 'X-Metabase-Session': cookie}, timeout=900)
+        except Exception as e:
+            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - Timeout {random_emoji(feeling="sad")}')
+            self.output.see(END)
+            time.sleep(10)
+            raise e
+
         # Raise error
         if not res.ok:
             self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - {res.status_code} {res.reason}, please consider stopping. {random_emoji(feeling="sad")}', 'orange')
             self.output.see(END)
-            # self.serious_errors[question_url] += 1
             time.sleep(10)
             raise ConnectionError
         res.raise_for_status()
@@ -266,7 +271,6 @@ class Metabase_Retry:
         except:
             self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - The data is too large or corrupted after downloading, please consider re-selecting the filter with less data and try again. {random_emoji(feeling="sad")}', 'orange')
             self.output.see(END)
-            # self.serious_errors[question_url] += 1
             time.sleep(10)
             raise Exception('The data is too large')
         try:
@@ -404,7 +408,6 @@ class Metabase_Retry:
             retries = int(self.retry_times.get())
 
             self.counter[self.question_url.get()] = 0 # To print retry times
-            # self.serious_errors[self.question_url.get()] = 0 # To sop query if Sever error
 
             start_time = time.time() # To calculate how long it took
             self.run_and_download(cookie=self.cookie.get(), question=question, retries=retries, save_as=self.save_as.get(), params=params, question_url=self.question_url.get())
