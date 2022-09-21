@@ -354,7 +354,7 @@ class Metabase_Retry:
         if self.save_as.get() == '':
             self.output.insert(END, '\nPlease fill in the Save as.', 'red')
         elif not os.path.isdir(folder_path):
-            self.output.insert(END, f'{folder_path} does not exist.', 'red')
+            self.output.insert(END, f'\n{folder_path} does not exist.', 'red')
         elif not '.csv' in self.save_as.get() and not '.xlsx' in self.save_as.get():
             self.output.insert(END, '\nPlease include .xlsx or .csv in file name.', 'red')
         else:
