@@ -29,6 +29,14 @@ pyinstaller --clean --add-data "ca.crt;seleniumwire" --add-data "ca.key;selenium
 We can change the version in https://pastebin.com/raw/0uJU5URe, the application will check the version when opening automatically. If the version is not the latest version, the application can not run anymore.
 
 ## Changelog
+### 1.1
+- User can delete input (Documents/metabase_retry) with a button.
+- Fix wrong counter when run multiple query.
+- Remove save parameters feature.
+- Count serius error and stop query if it had 10 serius error.
+- Check valid parameters online if '?' not in question url.
+
+
 ### 1.0
 1. Checking the user input infomations.
 - The app will check valid question URL.
@@ -54,3 +62,4 @@ We can change the version in https://pastebin.com/raw/0uJU5URe, the application 
 5. Interacting with user.
 - The app will print error, process to the Text box. Random emoji will be included for some case.
 - User can click Button or Enter to run.
+- User can open folder with button.
