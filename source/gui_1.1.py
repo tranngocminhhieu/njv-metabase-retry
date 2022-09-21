@@ -163,6 +163,7 @@ class Metabase_Retry:
         self.output.tag_config('green', foreground='green')
         self.output.tag_config('yellow', foreground='yellow')
         self.output.tag_config('orange', foreground='orange')
+        self.output.tag_config('grey', foreground='grey')
         self.output.insert(END, f'Hello Ninjas! {random_emoji()}')
 
         ttk.Label(mainframe, text="Powered by KAM - Analyst").grid(column=1, row=6, sticky=W, columnspan=3)
@@ -253,7 +254,8 @@ class Metabase_Retry:
             res = requests.post(f'https://metabase.ninjavan.co/api/card/{question}/query/json?parameters={params}',
                                 headers={'Content-Type': 'application/json', 'X-Metabase-Session': cookie}, timeout=900)
         except Exception as e:
-            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - Timeout {random_emoji(feeling="sad")}')
+            self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - Timeout! {random_emoji(feeling="sad")}')
+            self.output.insert(END, f'\n{e}', 'grey')
             self.output.see(END)
             time.sleep(10)
             raise e
@@ -268,8 +270,9 @@ class Metabase_Retry:
 
         try:
             data = res.json()
-        except:
+        except Exception as e:
             self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - The data is too large or corrupted after downloading, please consider re-selecting the filter with less data and try again. {random_emoji(feeling="sad")}', 'orange')
+            self.output.insert(END, f'\n{e}', 'grey')
             self.output.see(END)
             time.sleep(10)
             raise Exception('The data is too large')
