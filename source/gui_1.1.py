@@ -317,6 +317,15 @@ class Metabase_Retry:
             self.output.see(END)
 
     def handle_app(self):
+        question_url = copy.deepcopy(self.question_url.get())
+        cookie = copy.deepcopy(self.cookie.get())
+        save_as = copy.deepcopy(self.save_as.get())
+        retries = copy.deepcopy(self.retry_times.get())
+
+        # Notifying user to update app
+        if not self.check_version:
+            self.output.insert(END, f'\nDon\'t be stubborn. Please download the new version, Ninjas! {random_emoji()}', 'red')
+
         # Notifying user to update app
         if not self.check_version:
             self.output.insert(END, f'\nDon\'t be stubborn. Please download the new version, Ninjas! {random_emoji()}', 'red')
@@ -324,70 +333,70 @@ class Metabase_Retry:
         # Check valid infomation
         # Check URL
         check_question_url = False
-        if self.question_url.get() == '':
+        if question_url == '':
             self.output.insert(END, f'\nPlease fill in the Question URL', 'red')
-        elif not 'https://metabase.ninjavan.co/question/' in self.question_url.get():
+        elif not 'https://metabase.ninjavan.co/question/' in question_url:
             self.output.insert(END, '\nThis question URL is invalid. Please paste the URL copied from your browser.', 'red')
         else:
             check_question_url = True
             if not os.path.exists(self.metabase_retry_path):
                 os.makedirs(self.metabase_retry_path)
             with open(f'{self.metabase_retry_path}/question_url.txt', 'w') as f:
-                f.write(self.question_url.get())
+                f.write(question_url)
 
         # Check Cookie
         check_cookie = False
-        if self.cookie.get() == '':
+        if cookie == '':
             self.output.insert(END, '\nPlease fill in the Cookie', 'red')
-        elif len(self.cookie.get().split('-')) != 5:
+        elif len(cookie.split('-')) != 5:
             self.output.insert(END, '\nThis cookie is invalid. Please fill the metabase.SESSION cookie.\nAdd this extension to Chrome > Go to Metabase > Click the extension > Copy metabase.SESSION.\nhttps://chrome.google.com/webstore/detail/cookie-tab-viewer/fdlghnedhhdgjjfgdpgpaaiddipafhgk', 'red')
         else:
             check_cookie = True
             if not os.path.exists(self.metabase_retry_path):
                 os.makedirs(self.metabase_retry_path)
             with open(f'{self.metabase_retry_path}/cookie.txt', 'w') as f:
-                f.write(self.cookie.get())
+                f.write(cookie)
 
         # Check Save as
         check_save_as = False
-        folder_path = os.path.split(self.save_as.get())[0]
-        if self.save_as.get() == '':
+        folder_path = os.path.split(save_as)[0]
+        if save_as == '':
             self.output.insert(END, '\nPlease fill in the Save as.', 'red')
         elif not os.path.isdir(folder_path):
             self.output.insert(END, f'\n{folder_path} does not exist.', 'red')
-        elif not '.csv' in self.save_as.get() and not '.xlsx' in self.save_as.get():
+        elif not '.csv' in save_as and not '.xlsx' in save_as:
             self.output.insert(END, '\nPlease include .xlsx or .csv in file name.', 'red')
         else:
             check_save_as = True
             if not os.path.exists(self.metabase_retry_path):
                 os.makedirs(self.metabase_retry_path)
             with open(f'{self.metabase_retry_path}/save_as.txt', 'w') as f:
-                f.write(self.save_as.get())
+                f.write(save_as)
 
         # Check Retry times
         check_retry_times = False
-        if self.retry_times.get() == '':
+        if retries == '':
             self.output.insert(END, '\nPlease fill in the Rety times. A valid number will be greater than or equal to 0. And 0 means infinite.', 'red')
         else:
             try:
-                if int(self.retry_times.get()) < 0:
+                if int(retries) < 0:
                     self.output.insert(END, f'\nPlease enter a positive number.', 'red')
                 else:
                     check_retry_times = True
                     if not os.path.exists(self.metabase_retry_path):
                         os.makedirs(self.metabase_retry_path)
                     with open(f'{self.metabase_retry_path}/retry_times.txt', 'w') as f:
-                        f.write(self.retry_times.get())
+                        f.write(retries)
             except:
                 self.output.insert(END, f'\nPlease enter a positive number.', 'red')
 
         # Check valid Cookie and Question online
-        question = get_question(self.question_url.get())
+        question = get_question(question_url)
         check_status = False
-        if check_question_url and check_cookie and check_save_as and check_retry_times and self.check_version == True:
+        if check_question_url and check_cookie and check_save_as and check_retry_times and self.check_version:
             self.output.insert(END, f'\nVerifying your information on the server.')
             self.output.see(END)
-            check_status = check_valid_cookie_url(self.cookie.get(), question, self.question_url.get())
+            check_status = check_valid_cookie_url(cookie, question, question_url)
             if check_status != True:
                 self.output.insert(END, f'\n{check_status}', 'red')
 
@@ -400,20 +409,20 @@ class Metabase_Retry:
             self.output.see(END)
 
             # Get parameters
-            if not '?' in self.question_url.get():
+            if not '?' in question_url:
                 params = '[]'
             else:
                 self.output.insert(END, '\nGetting parameters from payload, Chrome window will automatically close once done.')
                 self.output.see(END)
-                params = get_params(cookie=self.cookie.get(), question_url=self.question_url.get())
+                params = get_params(cookie=cookie, question_url=question_url)
 
             # Run query
-            retries = int(self.retry_times.get())
+            retries = int(retries)
 
-            self.counter[self.question_url.get()] = 0 # To print retry times
+            self.counter[question_url] = 0 # To print retry times
 
             start_time = time.time() # To calculate how long it took
-            self.run_and_download(cookie=self.cookie.get(), question=question, retries=retries, save_as=self.save_as.get(), params=params, question_url=self.question_url.get())
+            self.run_and_download(cookie=cookie, question=question, retries=retries, save_as=save_as, params=params, question_url=question_url)
 
             # Print how long it took
             end_time = time.time()
