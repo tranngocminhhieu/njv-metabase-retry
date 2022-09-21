@@ -162,6 +162,7 @@ class Metabase_Retry:
         self.output.tag_config('red', foreground='red')
         self.output.tag_config('green', foreground='green')
         self.output.tag_config('yellow', foreground='yellow')
+        self.output.insert(END, f'Hello Ninjas! {random_emoji()}')
 
         ttk.Label(mainframe, text="Powered by KAM - Analyst").grid(column=1, row=6, sticky=W, columnspan=3)
 
