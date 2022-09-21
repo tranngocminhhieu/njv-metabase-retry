@@ -122,7 +122,7 @@ class Metabase_Retry:
         # Area 1: Input Question URL
         ttk.Label(mainframe, text="Question URL").grid(column=1, row=1, sticky=W)
         self.question_url = StringVar()
-        self.input_question_url = ttk.Entry(mainframe, textvariable=self.question_url, width=100) # Only set width for one Entry, anothers Entry will responsive with sticky.
+        self.input_question_url = ttk.Entry(mainframe, textvariable=self.question_url, width=70) # Only set width for one Entry, anothers Entry will responsive with sticky.
         self.input_question_url.grid(column=2, row=1, sticky=(W,E), columnspan=2)
 
         # Area 1: Input Cookie
@@ -157,7 +157,7 @@ class Metabase_Retry:
         # Area 2: Area to print the process.
         # Area 2: Text box
         # self.output = Text(mainframe, height=20, width=70, pady=5, padx=5, wrap=WORD, blockcursor=TRUE, borderwidth=2, relief="sunken")
-        self.output = scrolledtext.ScrolledText(mainframe, height=20, width=70, pady=5, padx=5, wrap=WORD, blockcursor=TRUE, borderwidth=2, relief="sunken")
+        self.output = scrolledtext.ScrolledText(mainframe, height=20, pady=5, padx=5, wrap=WORD, blockcursor=TRUE, borderwidth=2, relief="sunken")
         self.output.grid(column=1, row=5, sticky=(W, E, S, N), columnspan=3)
         self.output.tag_config('red', foreground='red')
         self.output.tag_config('green', foreground='green')
@@ -213,6 +213,9 @@ class Metabase_Retry:
         if not self.check_version:
             self.output.insert(END, f'Please update the app to the latest version {self.latest_version}. The current version is {self.current_version}.', 'red')
 
+        self.counter = {}
+        self.serious_errors = {}
+
     def save_as_file(self):
         folder_selected = filedialog.asksaveasfilename(typevariable=StringVar, filetypes=[('Excel file', '*.xlsx'), ('CSV file', '*.csv')])
         self.save_as.set(folder_selected)
@@ -234,21 +237,20 @@ class Metabase_Retry:
         self.retry_times.set(0)
         try:
             shutil.rmtree(self.metabase_retry_path)
-            self.output.insert(END, f'\nThe input data has been cleared. {random_emoji()}', 'green')
+            self.output.insert(END, f'\nThe input data has been deleted. {random_emoji()}', 'green')
             self.output.see(END)
         except:
             pass
 
-
     # Metabase query function
     @retry(wait=wait_fixed(5))
-    def metabase_question_query(self, cookie, question, params='[]', *args):
-        if self.serious_errors >= 10:
+    def metabase_question_query(self, cookie, question, question_url, params='[]', *args):
+        if self.serious_errors[question_url] >= 10:
             self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: Query {question} was stopped because it had more than 10 serious errors. {random_emoji(feeling="sad")}', 'red')
             self.output.see(END)
             return None
-        self.counter += 1
-        self.output.insert(END,f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: Start query {question} ({self.counter})')
+        self.counter[question_url] += 1
+        self.output.insert(END,f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: Start query {question} ({self.counter[question_url]})')
         self.output.see(END)
         res = requests.post(f'https://metabase.ninjavan.co/api/card/{question}/query/json?parameters={params}',
                             headers={'Content-Type': 'application/json', 'X-Metabase-Session': cookie}, timeout=600)
@@ -256,7 +258,7 @@ class Metabase_Retry:
         if not res.ok:
             self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - {res.status_code} {res.reason}, please consider stopping. {random_emoji(feeling="sad")}', 'red')
             self.output.see(END)
-            self.serious_errors += 1
+            self.serious_errors[question_url] += 1
             time.sleep(10)
             raise ConnectionError
         res.raise_for_status()
@@ -266,7 +268,9 @@ class Metabase_Retry:
         except:
             self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - The data is too large or corrupted after downloading, please re-select the filter with fewer data and try again. {random_emoji(feeling="sad")}', 'red')
             self.output.see(END)
-            self.serious_errors += 1
+            self.serious_errors[question_url] += 1
+            time.sleep(10)
+            raise Exception('The data is too large')
         try:
             error = data['error']  # Too many queued queries for "admin", Query exceeded the maximum execution time limit of 5.00m
             self.output.insert(END, f'\n{datetime.now().strftime("%Y-%m-%d %H:%M")}: {question} - {error} {random_emoji(feeling="sad")}')
@@ -281,18 +285,19 @@ class Metabase_Retry:
         self.output.see(END)
         return _df
 
-    def run_and_download(self, cookie, question, retries, save_as, params='[]', *args):
+    def run_and_download(self, cookie, question, retries, save_as, question_url, params='[]', *args):
         _cookie = copy.deepcopy(cookie)
         _question = copy.deepcopy(question)
         _retries = copy.deepcopy(retries)
         _save_as = copy.deepcopy(save_as)
         _params = copy.deepcopy(params)
+        _question_url = copy.deepcopy(question_url)
         self.output.insert(END, f'\nStart running query {_question} and save as {_save_as}.')
         self.output.see(END)
         if retries > 0:
-            df = self.metabase_question_query.retry_with(wait=wait_fixed(5), stop=stop_after_attempt(_retries))(self, cookie=_cookie, question=_question, params=_params)
+            df = self.metabase_question_query.retry_with(wait=wait_fixed(5), stop=stop_after_attempt(_retries))(self, cookie=_cookie, question=_question, params=_params, question_url=_question_url)
         else:
-            df = self.metabase_question_query(cookie=_cookie, question=_question, params=_params)
+            df = self.metabase_question_query(cookie=_cookie, question=_question, params=_params, question_url=_question_url)
         # Save
         if df == None:
             return
@@ -401,10 +406,12 @@ class Metabase_Retry:
 
             # Run query
             retries = int(self.retry_times.get())
-            self.counter = 0 # To print retry times
-            self.serious_errors = 0 # To sop query if Sever error
+
+            self.counter[self.question_url.get()] = 0 # To print retry times
+            self.serious_errors[self.question_url.get()] = 0 # To sop query if Sever error
+
             start_time = time.time() # To calculate how long it took
-            self.run_and_download(cookie=self.cookie.get(), question=question, retries=retries, save_as=self.save_as.get(), params=params)
+            self.run_and_download(cookie=self.cookie.get(), question=question, retries=retries, save_as=self.save_as.get(), params=params, question_url=self.question_url.get())
 
             # Print how long it took
             end_time = time.time()
